@@ -28,6 +28,8 @@ if (process.env.NODE_ENV === 'development') {
 // Routes
 app.use('/api/v1', routes);
 
+app.use('/api/v1/drivers', require('./routes/driverAuth.routes'));
+
 // Error handling middleware
 app.use(errorHandler);
 
