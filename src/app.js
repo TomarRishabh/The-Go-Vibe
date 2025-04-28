@@ -1,13 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const morgan = require('morgan');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const errorHandler = require('./middlewares/error.middleware');
 const routes = require('./routes');
 const logger = require('./utils/logger');
+const driverRoutes = require('./routes/driver.routes');  // Correct routes import
 
-// Load env vars
 require('dotenv').config();
 
 // Create Express app
@@ -23,12 +22,11 @@ app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV === 'development') {
     app.use(require('morgan')('dev', { stream: logger.stream }));
-  }
+}
 
 // Routes
 app.use('/api/v1', routes);
-
-app.use('/api/v1/drivers', require('./routes/driverAuth.routes'));
+app.use('/api/v1/drivers', driverRoutes);  // Only this for all driver related APIs
 
 // Error handling middleware
 app.use(errorHandler);
@@ -36,15 +34,13 @@ app.use(errorHandler);
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
   console.error(`Error: ${err.message}`);
-  // Close server & exit process
-  // server.close(() => process.exit(1));
 });
 
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(
   PORT,
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
+  () => console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
 );
 
 module.exports = server;

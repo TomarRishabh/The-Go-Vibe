@@ -2,7 +2,7 @@ const express = require('express');
 const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const rideController = require('../controllers/ride.controller');
-const driverAuthRoutes = require('./driverAuth.routes');
+const driverAuthRoutes = require('./driver.routes');
 
 
 const router = express.Router();
