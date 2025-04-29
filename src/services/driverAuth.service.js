@@ -20,3 +20,27 @@ exports.generateToken = (driverId) => {
     expiresIn: JWT_EXPIRES_IN,
   });
 };
+
+// Add or update this method
+exports.updateDriver = async (driverId, updateData) => {
+    try {
+        console.log(`Attempting to update driver ${driverId} with data:`, updateData);
+        
+        const driver = await Driver.findByIdAndUpdate(
+            driverId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+        
+        if (!driver) {
+            console.error(`Driver with ID ${driverId} not found`);
+            throw new Error('Driver not found');
+        }
+        
+        console.log(`Driver ${driverId} updated successfully`);
+        return driver;
+    } catch (error) {
+        console.error(`Error updating driver ${driverId}:`, error);
+        throw error;
+    }
+};

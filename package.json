@@ -4,8 +4,13 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-    "test": "jest"
+    "dev": "NODE_ENV=development nodemon src/app.js",
+    "dev:docker": "NODE_ENV=development USE_DOCKER_DB=true nodemon src/app.js",
+    "db:start": "node scripts/docker-helper.js start-db",
+    "db:stop": "node scripts/docker-helper.js stop-db",
+    "db:status": "node scripts/docker-helper.js status",
+    "docker:logs": "node scripts/docker-helper.js logs",
+    "docker:up": "node scripts/docker-helper.js compose-up"
   },
   "keywords": [],
   "author": "",

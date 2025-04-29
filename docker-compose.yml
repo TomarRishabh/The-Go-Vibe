@@ -2,13 +2,18 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: the-go-vibe-backend
+    restart: always
     ports:
       - "3000:3000"
     environment:
       TZ: Asia/Kolkata
-      NODE_ENV: development
+      NODE_ENV: production
       PORT: 3000
+      USE_DOCKER_DB: true
       # Auth
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
@@ -26,9 +31,6 @@ services:
       MINI_RATE_PER_KM: ${MINI_RATE_PER_KM}
       # Redis
       REDIS_URL: redis://redis:6379
-      # Payment
-      # RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
-      # RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
     depends_on:
       mongo:
         condition: service_healthy
@@ -39,33 +41,33 @@ services:
       - /usr/src/app/node_modules
     command: nodemon src/app.js  
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
     networks:
-      - app-network
+      - go-vibe-network
 
   mongo:
-    image: mongo:6
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
     ports:
       - "27017:27017"
     environment:
-      TZ: Asia/Kolkata
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_DATABASE: uber-rapido
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh -u root -p example --quiet || exit 1
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
     volumes:
-      - mongodb_data:/data/db
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./data/mongodb:/data/db  # Store MongoDB data in project directory
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
-      - app-network
+      - go-vibe-network
 
   redis:
     image: redis:latest
@@ -77,14 +79,15 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - redis_data:/data
+      - ./data/redis:/data  # Store Redis data in project directory
     networks:
-      - app-network
+      - go-vibe-network
 
-volumes:
-  mongodb_data:
-  redis_data:
+# Replace named volumes with local directories
+# volumes:
+#   mongodb-data:
+#   redis_data:
 
 networks:
-  app-network:
+  go-vibe-network:
     driver: bridge
